@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+build/
+
+# Screenshots / temp files
+screenshot.png
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
