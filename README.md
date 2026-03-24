@@ -1,113 +1,109 @@
 # Conceptualization Document
 **프로젝트명:** 스크롤 캡처 자동 병합 웹 서비스 (Auto Image Stitcher)
 
-## 1) Business Purpose
+## 1. Business Purpose
 
 ### 1.1 Project Background
-긴 웹페이지, 메신저 대화, 문서 화면을 캡처할 때 사용자는 여러 장의 이미지를 촬영해야 하며, 이를 수동으로 이어 붙이는 과정은 비효율적입니다. 본 서비스는 여러 장의 캡처 이미지를 업로드하면 겹침 영역을 자동 인식해 하나의 긴 이미지로 병합함으로써 시간과 작업 부담을 줄입니다.
+스마트폰이나 PC를 사용하다 보면 긴 웹페이지, 메신저 대화, 문서 등을 캡처해야 할 때가 많습니다. 하지만 화면에 한 번에 담기지 않아 여러 장으로 나누어 캡처한 뒤, 이를 다시 하나의 이미지로 자연스럽게 이어 붙이는 작업은 매우 번거롭고 시간이 오래 걸립니다.
+
+이러한 불편함을 해소하기 위해, 사용자가 순서대로(혹은 순서와 무관하게) 여러 장의 캡처 이미지를 업로드하면 시스템이 겹치는 영역을 자동으로 인식하여 한 장의 깔끔한 긴 이미지로 병합해 주는 웹 서비스를 기획했습니다.
 
 ### 1.2 Goal
-- 다중 캡처 이미지의 중복 영역 자동 탐지 및 정합(Stitching)
-- 병합 결과를 고화질 `PNG/JPG`로 다운로드
-- 민감 정보 보호를 위해 서버 업로드 없이 브라우저 내(Client-side) 처리
+- 여러 장의 캡처 이미지 간의 중복 영역을 자동으로 탐지하고 병합(Stitching)하는 웹 서비스 개발
+- 병합된 이미지를 고화질의 `JPG` 또는 `PNG` 포맷으로 다운로드하는 기능 제공
+- 개인정보 유출 우려를 줄이기 위해 서버 전송 없이 브라우저(Client-side) 내에서 병합 처리 지원
 
 ### 1.3 Target Market
-- 긴 캡처 이미지를 자주 공유하는 일반 사용자
-- 보고서/증빙용으로 다중 캡처를 취합하는 직장인/학생
-- 보안 이슈로 로컬 처리 방식을 선호하는 사용자
+- 긴 대화 내용이나 자료를 캡처하여 공유하려는 일반 스마트폰/PC 사용자
+- 업무상 여러 장의 화면 캡처를 하나의 문서로 취합해야 하는 직장인 및 학생
 
-## 2) Actors and User Actions
+## 2. System Context Diagram
 
-- **User**
-  1. 병합할 이미지 여러 장 업로드
-  2. 순서 드래그 앤 드롭 정렬, 불필요 이미지 삭제
-  3. 자동 병합 실행 및 결과 미리보기 확인
-  4. 결과를 `PNG/JPG` 저장 또는 클립보드 복사
+```mermaid
+flowchart LR
+    User["User"]
+    BrowserApp["AutoImageStitcherWebApp(ClientSide)"]
+    Worker["WebWorker(ImageProcessing)"]
+    BrowserAPI["BrowserAPIs(Canvas,Clipboard,FileDownload)"]
+    LocalStorage["UserDeviceLocalStorage"]
 
-## 3) Concept of Operation
+    User -->|"Upload/Sort/Run/Download"| BrowserApp
+    BrowserApp -->|"Send image buffers"| Worker
+    Worker -->|"Return stitched result/progress"| BrowserApp
+    BrowserApp -->|"Render/Copy/Save"| BrowserAPI
+    BrowserAPI -->|"Write output files/data"| LocalStorage
+```
 
-### 3.1 Input and Auto Reorder (이미지 입력 및 자동 정렬)
-- **Purpose:** 업로드 순서에 의존하지 않고 자동으로 올바른 순서 재구성
-- **Approach:** 이미지 간 상/하단 겹침 유사도를 계산해 시퀀스 추정
-- **Expected Value:** 파일명/업로드 순서가 뒤섞여도 자동 정렬 지원
+## 3. Use Case List
 
-### 3.2 Stitching with Fixed UI Removal (고정 UI 제거 + 병합)
-- **Purpose:** 상태바/하단바/고정 버튼 등 반복 UI 제거
-- **Approach:**
-  - 연속 이미지의 상/하단에서 변화가 적은 고정 영역 탐지
-  - 본문(스크롤로 변화하는 영역) 중심 특징 매칭 후 합성
-- **Expected Value:** 중간에 헤더/푸터가 반복되지 않는 자연스러운 결과
+| Actor | Use Case | Description |
+| :--- | :--- | :--- |
+| User | 이미지 업로드 | 병합할 여러 장의 캡처 이미지를 웹에 업로드한다. |
+| User | 순서 정렬 및 편집 | 업로드된 이미지의 순서를 드래그 앤 드롭으로 변경하거나 불필요한 이미지를 삭제한다. |
+| User | 자동 병합 요청 | 이미지 병합을 요청하여 결과를 미리보기 화면으로 확인한다. |
+| User | 결과물 다운로드 | 성공적으로 병합된 이미지를 `JPG` 또는 `PNG` 파일로 로컬 기기에 저장한다. |
+| User | 클립보드 복사 | 병합 결과를 클립보드로 복사하여 다른 앱에 즉시 붙여넣는다. |
 
-### 3.3 Export and View (결과 출력 및 내보내기)
-- **Purpose:** 즉시 활용 가능한 결과 제공
-- **Approach:**
-  - 브라우저 내 미리보기(축소/확대 토글)
-  - `클립보드 복사`, `PNG 저장`, `JPG 저장` 제공
-- **Expected Value:** 공유/보관까지 원클릭에 가까운 UX
+## 4. Concept of Operation
 
-## 4) Problem Statements and Mitigations
+### 4.1 이미지 입력 및 자동 정렬 (Input and Auto Reorder)
+| 항목 | 설명 |
+| :--- | :--- |
+| Purpose | 사용자가 순서에 구애받지 않고 편리하게 이미지를 시스템에 제공함 |
+| Approach | 이미지 간 상하단 겹침 픽셀 유사도를 계산하여 올바른 스크롤 순서를 자동 탐색 및 재배열 |
+| Dynamics | 스크롤 캡처 후 갤러리에서 여러 장을 한 번에 선택해 업로드하는 경우 |
+| Goals | 파일명/업로드 순서에 의존하지 않는 스마트한 정렬 제공 |
 
-### 4.1 과도한 중복 또는 부족한 겹침 영역
-- **Risk:** 정합 실패, 잘못된 연결
-- **Mitigation:**
-  - 매칭 실패 시 폴백 모드(단순 연결 또는 수동 정렬 유도)
-  - 사용자 피드백: "이미지 간 겹치는 영역이 부족합니다."
+### 4.2 고정 UI 인식 및 이미지 병합 (Stitching with Fixed UI Removal)
+| 항목 | 설명 |
+| :--- | :--- |
+| Purpose | 화면 상하단의 고정 UI를 제거하고 자연스럽게 이어 붙임 |
+| Approach | 픽셀 변화가 적은 상단/하단 고정 영역을 크롭한 뒤, 본문 영역 중심 특징 매칭으로 합성 |
+| Dynamics | 배터리 상태바, 앱 하단 메뉴바 등이 반복 포함되는 캡처를 병합하는 경우 |
+| Goals | 어긋남이나 중복 요소(헤더 반복 등) 없이 하나의 자연스러운 결과 이미지 생성 |
 
-### 4.2 기기/해상도 파편화
-- **Risk:** 고정 UI 높이, 해상도 차이로 잘못된 크롭
-- **Mitigation:**
-  - 절대 좌표 대신 상대 비율 + 동적 유사도 기반 탐지
-  - 템플릿 매칭/다중 스케일 비교로 적응형 처리
+### 4.3 결과 출력 및 내보내기 (Export and View)
+| 항목 | 설명 |
+| :--- | :--- |
+| Purpose | 처리된 결과물을 원하는 포맷으로 즉시 활용 가능하게 지원 |
+| Approach | 결과 미리보기(축소/확대 토글), `클립보드 복사`, `JPG 저장`, `PNG 저장` 제공 |
+| Dynamics | 완성된 이미지를 메신저에 붙여넣거나 파일로 소장하려는 경우 |
+| Goals | 저장/공유 과정의 번거로움을 최소화하여 UX 향상 |
 
-### 4.3 클라이언트 성능 한계
-- **Risk:** 브라우저 멈춤, 메모리 급증
-- **Mitigation:**
-  - Web Worker로 병합 연산 분리
-  - 진행률 표시, 대용량 입력 시 단계적 처리(Chunking/Downsample 옵션)
+## 5. Problem Statement
 
-## 5) Functional Requirements (MVP)
+### 5.1 과도한 중복 또는 부족한 겹침 영역
+사용자가 스크롤을 너무 많이 내려 겹침이 없거나 너무 조금 내려 중복이 과도한 경우, 알고리즘이 연결 지점을 찾지 못할 수 있다.
 
-- 다중 이미지 업로드 (드래그 앤 드롭, 파일 선택)
-- 이미지 순서 변경/삭제
-- 자동 정렬(옵션: ON/OFF)
-- 고정 UI 제거 후 자동 병합
-- 병합 결과 미리보기
-- 결과 내보내기: `PNG`, `JPG`, 클립보드 복사
-- 실패 시 오류 메시지/가이드 제공
+**해결 방안**
+- 특징점/템플릿 매칭 실패 시 단순 상하 연결 폴백(Fallback) 모드 제공
+- 사용자 피드백 메시지 제공: "이미지 간 겹치는 영역이 부족합니다."
 
-## 6) Non-Functional Requirements
+### 5.2 다양한 기기와 해상도 파편화
+스마트폰 화면 비율과 캡처 해상도가 달라 고정 UI 높이, 스크롤 바 형태가 기기마다 다를 수 있다.
 
-- **Privacy:** 이미지 데이터 외부 전송 금지(기본 로컬 처리)
-- **Performance:** UI 프리즈 없이 진행률 표시
-- **Reliability:** 다양한 해상도/비율에서 일관된 결과
-- **Usability:** 초보자도 3클릭 내 결과 획득
-- **Compatibility:** 최신 Chrome/Edge 우선 지원
+**해결 방안**
+- 절대 픽셀 좌표가 아닌 이미지 간 유사도 기반의 동적 크롭 판단
+- 템플릿 매칭(다중 스케일 포함) 기반으로 기기 차이에 유연하게 대응
 
-## 7) Suggested Technical Direction (초기 제안)
+### 5.3 클라이언트 사이드 성능 한계
+수십 장의 고해상도 이미지를 브라우저에서 직접 병합할 경우 메모리 초과나 UI 멈춤이 발생할 수 있다.
 
-- **Frontend:** React + TypeScript
-- **Image Processing:** OpenCV.js (template matching + similarity scoring)
-- **Background Processing:** Web Worker
-- **Rendering/Export:** Canvas API (`toBlob`, `toDataURL`)
-- **Clipboard:** Clipboard API (`navigator.clipboard` + fallback)
+**해결 방안**
+- Web Worker로 병합 연산을 백그라운드 스레드로 분리
+- 진행률(Progress) 표시로 처리 상태를 명확히 안내
 
-## 8) Success Metrics (KPI)
+## 6. Glossary
 
-- 자동 병합 성공률 (정상 결과 비율)
-- 평균 처리 시간 (이미지 N장 기준)
-- 사용자 재시도율 (실패/불만족 간접 지표)
-- 내보내기 완료율 (`PNG/JPG/Clipboard`)
-- 이탈률 (업로드 후 병합 전 종료 비율)
+| Term | Description |
+| :--- | :--- |
+| Image Stitching (이미지 병합) | 여러 장의 사진에서 겹치는 부분을 찾아 하나의 매끄러운 이미지로 연결하는 기술 |
+| Fixed UI (고정 UI) | 스크롤을 내려도 화면 상단/하단에 고정되어 움직이지 않는 요소 |
+| Template Matching | 특정 패턴이나 이미지 조각이 원본의 어느 위치와 가장 일치하는지 찾는 기법 |
+| Web Worker | 브라우저 메인 스레드와 분리되어 무거운 연산을 처리하는 백그라운드 실행 기술 |
 
-## 9) Glossary
+## 7. References
 
-- **Image Stitching:** 겹침 영역을 기준으로 여러 이미지를 하나로 연결하는 기술
-- **Fixed UI:** 스크롤해도 고정되는 상태바/헤더/푸터 요소
-- **Template Matching:** 특정 이미지 패턴의 위치를 유사도로 찾는 기법
-- **Web Worker:** 메인 스레드와 분리된 백그라운드 연산 환경
-
-## 10) References
-
-- [レシート因子メーカー](https://lt900ed.github.io/receipt_factor/)
-- [OpenCV.js Template Matching](https://docs.opencv.org/3.4/d8/dd1/tutorial_js_template_matching.html)
-- [MDN Clipboard API](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API)
+- 레퍼런스 웹사이트 (レシート因子メーカー): [https://lt900ed.github.io/receipt_factor/](https://lt900ed.github.io/receipt_factor/)
+- OpenCV.js Template Matching Documentation: [https://docs.opencv.org/3.4/d8/dd1/tutorial_js_template_matching.html](https://docs.opencv.org/3.4/d8/dd1/tutorial_js_template_matching.html)
+- MDN Web Docs - Clipboard API: [https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API)
