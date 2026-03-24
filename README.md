@@ -104,6 +104,5 @@ flowchart LR
 
 ## 7. References
 
-- 레퍼런스 웹사이트 (レシート因子メーカー): [https://lt900ed.github.io/receipt_factor/](https://lt900ed.github.io/receipt_factor/)
 - OpenCV.js Template Matching Documentation: [https://docs.opencv.org/3.4/d8/dd1/tutorial_js_template_matching.html](https://docs.opencv.org/3.4/d8/dd1/tutorial_js_template_matching.html)
 - MDN Web Docs - Clipboard API: [https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API)
