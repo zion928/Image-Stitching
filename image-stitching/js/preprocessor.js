@@ -289,7 +289,6 @@ const Preprocessor = {
       // 스크롤 영역
       const scrollH = fa.scrollY2 - fa.scrollY1;
       obj.scroll = m.roi(new cv.Rect(0, fa.scrollY1, m.cols, scrollH)).clone();
-      obj.scroll_full_width = obj.scroll.clone();
 
       // 푸터 (고정 영역 하단)
       if (fa.footerHeight > 0) {
@@ -312,7 +311,7 @@ const Preprocessor = {
 
   // 이미지 파츠 메모리 해제
   cleanupImgs(imgs) {
-    const parts = ['header', 'scroll', 'scroll_full_width', 'footer', 'bottom_row', 'bottom_row_higher'];
+    const parts = ['header', 'scroll', 'footer', 'bottom_row', 'bottom_row_higher'];
     imgs.forEach(img => {
       parts.forEach(p => {
         if (img[p]) {

@@ -253,7 +253,7 @@ async function generatePhoto() {
     // 5. 스크롤바 기반 순서 결정 + 겹침 매칭
     console.log('순서 결정 + 겹침 매칭');
     const n = imgs.length;
-    const { order, overlaps } = Matcher.matchAllWithOrder(imgs);
+    const { order, overlaps, scrollbarWidth } = Matcher.matchAllWithOrder(imgs);
     console.log('최종 순서:', order);
     changePercentage(75);
     await repaint();
@@ -301,7 +301,7 @@ async function generatePhoto() {
     }
 
     const showHeader = document.getElementById('showHeader').checked;
-    Renderer.renderToCanvas(imgs, relativeHeights, canvasEl, showHeader);
+    Renderer.renderToCanvas(imgs, relativeHeights, canvasEl, showHeader, scrollbarWidth || 0);
     changePercentage(95);
     await repaint();
 

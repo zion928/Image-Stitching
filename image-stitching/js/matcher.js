@@ -8,7 +8,7 @@ const Matcher = {
 
   // 겹침 매칭
   MIN_OVERLAP_RATIO: 0.05,
-  MAX_OVERLAP_RATIO: 0.55,
+  MAX_OVERLAP_RATIO: 0.70,
   THRES_PIXEL_DIFF: 10,
   THRES_BAD_PIXEL_RATIO: 0.08,
   BAD_PIXEL_THRESHOLD: 20,
@@ -232,10 +232,14 @@ const Matcher = {
 
     console.log('스크롤바 감지:');
     let order = this.getOrderByScrollBar(imgs);
+    // 스크롤바가 감지되면 렌더링 시 크롭할 너비 계산
+    const detectedBarW = order ? Math.min(this.SCROLLBAR_WIDTH, Math.floor(Math.min(imgs[0].scroll.cols) * 0.05)) : 0;
 
     if (!order) {
       console.log('스크롤바 감지 실패 → 전 쌍 매칭 폴백');
-      return this.matchAllBruteForce(imgs);
+      const result = this.matchAllBruteForce(imgs);
+      result.scrollbarWidth = 0;
+      return result;
     }
 
     console.log('인접 쌍 겹침 매칭:');
@@ -259,9 +263,11 @@ const Matcher = {
     }
 
     grays.forEach(g => g.delete());
-    return { order, overlaps };
+    return { order, overlaps, scrollbarWidth: detectedBarW };
   },
 
+  // 그리디 체인 빌딩: O(N²)로 최적 순서를 결정
+  // 모든 (i→j) 쌍의 매칭 점수를 구한 뒤, 점수가 좋은 쌍부터 체인에 연결
   matchAllBruteForce(imgs) {
     const n = imgs.length;
     const grays = [];
@@ -271,60 +277,78 @@ const Matcher = {
       grays.push(gray);
     }
 
-    console.log('모든 쌍 기본 매칭:');
+    console.log('모든 쌍 기본 매칭 (그리디 체인):');
     const pairResults = Array.from({ length: n }, () => new Array(n).fill(null));
+    const edges = [];
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < n; j++) {
         if (i === j) continue;
         const match = this.findOverlapDebug(grays[i], grays[j], i, j);
-        if (match) pairResults[i][j] = match;
+        if (match) {
+          pairResults[i][j] = match;
+          edges.push({ from: i, to: j, diff: match.diff });
+        }
       }
     }
 
     grays.forEach(g => g.delete());
 
-    const permutations = this.getPermutations([...Array(n).keys()]);
-    console.log(`${n}장 → ${permutations.length}개 순열 탐색`);
+    // 점수 좋은 순서로 정렬
+    edges.sort((a, b) => a.diff - b.diff);
 
-    let bestOrder = null;
-    let bestScore = { validPairs: -1, totalDiff: Infinity };
+    // 그리디 체인 빌딩: 각 노드는 최대 1개의 next, 1개의 prev만 가짐
+    const next = new Array(n).fill(-1);
+    const prev = new Array(n).fill(-1);
+    let linkedCount = 0;
 
-    for (const perm of permutations) {
-      let validPairs = 0, totalDiff = 0;
+    for (const edge of edges) {
+      if (linkedCount >= n - 1) break;
+      const { from, to } = edge;
+      // from의 next가 비어있고, to의 prev가 비어있고, 사이클이 생기지 않으면 연결
+      if (next[from] !== -1 || prev[to] !== -1) continue;
 
-      for (let k = 0; k < perm.length - 1; k++) {
-        const m = pairResults[perm[k]][perm[k + 1]];
-        if (m) { validPairs++; totalDiff += m.diff; }
-        else { totalDiff += 100; }
+      // 사이클 검사: to에서 next를 따라가면 from에 도달하는지
+      let cur = from;
+      let hasCycle = false;
+      while (prev[cur] !== -1) {
+        cur = prev[cur];
+        if (cur === to) { hasCycle = true; break; }
       }
+      if (hasCycle) continue;
 
-      if (validPairs > bestScore.validPairs ||
-          (validPairs === bestScore.validPairs && totalDiff < bestScore.totalDiff)) {
-        bestScore = { validPairs, totalDiff };
-        bestOrder = [...perm];
-      }
+      next[from] = to;
+      prev[to] = from;
+      linkedCount++;
     }
 
-    console.log(`최적 순열: [${bestOrder}] (유효쌍: ${bestScore.validPairs}/${n-1}, 총diff: ${bestScore.totalDiff.toFixed(2)})`);
+    // 체인의 시작점(prev가 없는 노드) 찾기
+    let start = 0;
+    for (let i = 0; i < n; i++) {
+      if (prev[i] === -1) { start = i; break; }
+    }
+
+    const order = [];
+    let cur = start;
+    const visited = new Set();
+    while (cur !== -1 && !visited.has(cur)) {
+      visited.add(cur);
+      order.push(cur);
+      cur = next[cur];
+    }
+
+    // 체인에 포함되지 않은 이미지 추가
+    for (let i = 0; i < n; i++) {
+      if (!visited.has(i)) order.push(i);
+    }
+
+    console.log(`그리디 체인 순서: [${order}] (연결된 쌍: ${linkedCount}/${n-1})`);
 
     const overlaps = [];
-    for (let k = 0; k < bestOrder.length - 1; k++) {
-      overlaps.push(pairResults[bestOrder[k]][bestOrder[k + 1]]);
+    for (let k = 0; k < order.length - 1; k++) {
+      overlaps.push(pairResults[order[k]][order[k + 1]]);
     }
 
-    return { order: bestOrder, overlaps };
-  },
-
-  getPermutations(arr) {
-    if (arr.length <= 1) return [arr];
-    const result = [];
-    for (let i = 0; i < arr.length; i++) {
-      const rest = [...arr.slice(0, i), ...arr.slice(i + 1)];
-      for (const perm of this.getPermutations(rest)) {
-        result.push([arr[i], ...perm]);
-      }
-    }
-    return result;
+    return { order, overlaps };
   },
 
   resolveHeights(order, overlaps, imgs) {
