@@ -362,13 +362,16 @@ function onOpenCvReady() {
 
 // ── 초기화 ──
 
-window.onload = function() {
+document.addEventListener('DOMContentLoaded', function() {
   // i18n, 다크모드 초기화
   DarkMode.init();
   I18n.init();
 
   document.getElementById('btnLang').addEventListener('click', () => I18n.toggle());
   document.getElementById('btnDark').addEventListener('click', () => DarkMode.toggle());
+  document.getElementById('btnDark').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); DarkMode.toggle(); }
+  });
 
   // Service Worker 등록
   if ('serviceWorker' in navigator) {
@@ -449,4 +452,4 @@ window.onload = function() {
   document.getElementById('outputImage').addEventListener('click', function() {
     Renderer.toggleImageSize(this);
   });
-};
+});

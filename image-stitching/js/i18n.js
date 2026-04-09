@@ -44,7 +44,6 @@ const I18n = {
       guideBad3: '서로 다른 페이지/화면의 스크린샷을 혼합한 경우',
       guideBad4: '스크롤 사이에 화면 내용이 변경된 경우 (실시간 피드 등)',
       footer: 'image-stitching | 클라이언트 사이드 처리 (서버 전송 없음)',
-      // 에러 메시지
       errNoImage: '이미지가 업로드되지 않았습니다.',
       errMinTwo: '2장 이상의 이미지가 필요합니다.',
       errCvNotReady: '라이브러리 로드가 완료되지 않았습니다. 잠시 후 다시 시도해 주세요.',
@@ -130,7 +129,12 @@ const I18n = {
     this.current = this.current === 'ko' ? 'en' : 'ko';
     localStorage.setItem('lang', this.current);
     this.apply();
+    this.updateBtn();
+  },
+
+  updateBtn() {
     const btn = document.getElementById('btnLang');
+    if (!btn) return;
     btn.textContent = this.current === 'ko' ? 'EN' : 'KO';
     btn.title = this.current === 'ko' ? 'English' : '한국어';
   },
@@ -144,23 +148,64 @@ const I18n = {
       this.current = browserLang.startsWith('ko') ? 'ko' : 'en';
     }
     this.apply();
-    const btn = document.getElementById('btnLang');
-    btn.textContent = this.current === 'ko' ? 'EN' : 'KO';
-    btn.title = this.current === 'ko' ? 'English' : '한국어';
+    this.updateBtn();
   }
 };
 
 // 다크모드
 const DarkMode = {
-  init() {
-    const saved = localStorage.getItem('darkMode');
-    if (saved === 'true' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+  get isDark() {
+    return document.documentElement.classList.contains('dark');
+  },
+
+  apply(dark) {
+    if (dark) {
+      document.documentElement.classList.add('dark');
       document.body.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
     }
+    this.updateBtn();
+  },
+
+  updateBtn() {
+    const btn = document.getElementById('btnDark');
+    if (!btn) return;
+    btn.setAttribute('aria-checked', this.isDark);
+    btn.title = this.isDark ? 'Light mode' : 'Dark mode';
   },
 
   toggle() {
-    document.body.classList.toggle('dark');
-    localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+    const dark = !this.isDark;
+    console.log('[DarkMode] toggle →', dark, '| html classes:', document.documentElement.className);
+    localStorage.setItem('darkMode', dark);
+    this.apply(dark);
+    console.log('[DarkMode] applied →', document.documentElement.className, '| body:', document.body.className);
+  },
+
+  init() {
+    const saved = localStorage.getItem('darkMode');
+    let dark;
+    if (saved !== null) {
+      dark = saved === 'true';
+    } else {
+      dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    this.apply(dark);
   }
 };
+
+// 즉시 실행: <html>에 다크모드 적용 (깜빡임 방지)
+(function() {
+  const saved = localStorage.getItem('darkMode');
+  let dark;
+  if (saved !== null) {
+    dark = saved === 'true';
+  } else {
+    dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  if (dark) {
+    document.documentElement.classList.add('dark');
+  }
+})();

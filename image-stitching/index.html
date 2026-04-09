@@ -10,6 +10,7 @@
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="./icon-192.png">
+  <script src="./js/i18n.js"></script>
 </head>
 <body>
   <!-- 로딩 오버레이 -->
@@ -41,8 +42,12 @@
   <header id="pageHeader">
     <h1><a href="./" data-i18n="title">스크롤 캡처 자동 병합</a></h1>
     <div class="header-controls">
-      <button id="btnLang" class="header-btn" title="English">EN</button>
-      <button id="btnDark" class="header-btn" title="다크모드">&#9790;</button>
+      <button id="btnLang" class="lang-btn" title="English">EN</button>
+      <div id="btnDark" class="dark-toggle" role="switch" aria-checked="false" tabindex="0" title="Dark mode">
+        <span class="dark-toggle-icon sun">&#9788;</span>
+        <span class="dark-toggle-icon moon">&#9790;</span>
+        <span class="dark-toggle-thumb"></span>
+      </div>
     </div>
   </header>
 
@@ -148,7 +153,6 @@
   </footer>
 
   <!-- 스크립트 -->
-  <script src="./js/i18n.js"></script>
   <script src="./js/preprocessor.js"></script>
   <script src="./js/matcher.js"></script>
   <script src="./js/renderer.js"></script>

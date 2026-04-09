@@ -9,13 +9,7 @@ body {
   background: #f0f0f0;
   color: #333;
   min-height: 100vh;
-  transition: background 0.3s, color 0.3s;
-}
-
-/* 다크모드 */
-body.dark {
-  background: #1a1a1a;
-  color: #e0e0e0;
+  transition: background 0.35s ease, color 0.35s ease;
 }
 
 a {
@@ -23,9 +17,149 @@ a {
   text-decoration: none;
 }
 
-/* 헤더 */
+/* ══════════════════════════════════════════
+   다크모드
+   - 배경: #1c1d1f (나무위키 기준, 순수 검정 금지)
+   - 글자: #d2d2d2 (순수 흰색 금지)
+   - 포인트: 채도 낮은 파스텔 블루
+   - 그림자 대신 미세 테두리
+   ══════════════════════════════════════════ */
+
+.dark body,
+body.dark {
+  background: #1c1d1f;
+  color: #d2d2d2;
+}
+
+.dark header {
+  background: #2b2d31;
+  border-bottom: 1px solid #3a3c40;
+}
+
+.dark .wrapper > article {
+  background: #242526;
+  box-shadow: none;
+  border: 1px solid #3a3c40;
+}
+
+.dark hr {
+  border-top-color: #3a3c40;
+}
+
+.dark #normalMsg {
+  background: rgba(44, 46, 50, 0.97);
+  color: #d2d2d2;
+  border-color: #555;
+}
+
+.dark #errMsg {
+  background: rgba(50, 25, 25, 0.97);
+  color: #ef7070;
+  border-color: #ef7070;
+}
+
+.dark #loading {
+  background: rgba(28, 29, 31, 0.92);
+}
+
+.dark #percentage {
+  color: #7ab3e8;
+}
+
+.dark .spinner-dot {
+  background: #7ab3e8;
+}
+
+.dark #dragDropArea {
+  border-color: #4a4c50;
+  background: #2b2d31;
+}
+
+.dark #dragDropArea.dragover {
+  border-color: #7ab3e8;
+  background: rgba(122, 179, 232, 0.06);
+}
+
+.dark .drag-drop-info {
+  color: #b0b0b0;
+}
+
+.dark .drag-drop-buttons {
+  color: #888;
+}
+
+.dark #btnUploadFromClipboard {
+  border-color: #555;
+  color: #b0b0b0;
+  background: #333538;
+}
+
+.dark #btnUploadFromClipboard:hover {
+  background: #3e4044;
+}
+
+.dark .drag-drop-hint {
+  color: #6a6a6a;
+}
+
+.dark .containerItem {
+  border-color: #4a4c50;
+}
+
+.dark .containerItem.drag-over {
+  box-shadow: 0 0 0 2px #7ab3e8;
+}
+
+.dark .btn {
+  background: #3a6ea5;
+}
+
+.dark .btn:hover {
+  background: #4a80b8;
+}
+
+.dark .btn.weak {
+  background: #333538;
+  color: #d2d2d2;
+  border: 1px solid #4a4c50;
+}
+
+.dark .btn.weak:hover {
+  background: #3e4044;
+}
+
+.dark .resultTitle {
+  color: #888;
+}
+
+.dark #outputImage {
+  border-color: #4a4c50;
+}
+
+.dark .howto-content p,
+.dark .guide-list {
+  color: #999;
+}
+
+.dark .checkLabel {
+  color: #b0b0b0;
+}
+
+.dark footer {
+  color: #555;
+}
+
+.dark #fileInput {
+  color: #b0b0b0;
+}
+
+/* ══════════════════════════════════════════
+   헤더
+   ══════════════════════════════════════════ */
+
 header {
-  padding: 12px 16px;
+  padding: 0 16px;
+  height: 52px;
   background: #4a90d9;
   color: #fff;
   display: flex;
@@ -34,126 +168,146 @@ header {
 }
 
 header h1 {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: 700;
 }
 
 .header-controls {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
 }
 
-.header-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
+/* ── 언어 전환 버튼 ── */
+
+.lang-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 14px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   color: #fff;
-  padding: 4px 10px;
-  border-radius: 4px;
+  border-radius: 16px;
   cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: 600;
-  transition: background 0.2s;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: background 0.2s, transform 0.12s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
-.header-btn:hover {
+.lang-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.lang-btn:active {
+  transform: scale(0.94);
+}
+
+.dark .lang-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.dark .lang-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ── 다크모드 토글 스위치 (iOS pill style) ── */
+
+.dark-toggle {
+  position: relative;
+  width: 56px;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 15px;
+  cursor: pointer;
+  transition: background 0.35s ease, border-color 0.35s ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.dark .dark-toggle {
+  background: #3a3c40;
+  border-color: #555;
+}
+
+.dark-toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  background: #fff;
+  border-radius: 50%;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+}
+
+.dark .dark-toggle-thumb {
+  left: 29px;
+  background: #d2d2d2;
+}
+
+.dark-toggle-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  line-height: 1;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.dark-toggle-icon.sun {
+  left: 7px;
+  opacity: 1;
+  color: #fff;
+}
+
+.dark-toggle-icon.moon {
+  right: 7px;
+  opacity: 0.4;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.dark .dark-toggle-icon.sun {
+  opacity: 0.3;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.dark .dark-toggle-icon.moon {
+  opacity: 1;
+  color: #e8cf6a;
+}
+
+.dark-toggle:hover {
   background: rgba(255, 255, 255, 0.35);
 }
 
-body.dark header {
-  background: #2a5a8a;
+.dark .dark-toggle:hover {
+  background: #474a50;
 }
 
-body.dark .wrapper > article {
-  background: #242424;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+.dark-toggle:active .dark-toggle-thumb {
+  width: 26px;
 }
 
-body.dark hr {
-  border-top-color: #3a3a3a;
+.dark .dark-toggle:active .dark-toggle-thumb {
+  left: 25px;
+  width: 26px;
 }
 
-body.dark #normalMsg {
-  background: rgba(40, 40, 40, 0.95);
-  color: #e0e0e0;
-  border-color: #555;
-}
+/* ══════════════════════════════════════════
+   레이아웃
+   ══════════════════════════════════════════ */
 
-body.dark #errMsg {
-  background: rgba(60, 20, 20, 0.95);
-  color: #ff6b6b;
-  border-color: #ff6b6b;
-}
-
-body.dark #loading {
-  background: rgba(20, 20, 20, 0.9);
-}
-
-body.dark #dragDropArea {
-  border-color: #555;
-}
-
-body.dark #dragDropArea.dragover {
-  border-color: #5a9ae6;
-  background: rgba(74, 144, 217, 0.1);
-}
-
-body.dark .drag-drop-info {
-  color: #bbb;
-}
-
-body.dark .drag-drop-buttons {
-  color: #999;
-}
-
-body.dark #btnUploadFromClipboard {
-  border-color: #666;
-  color: #bbb;
-}
-
-body.dark #btnUploadFromClipboard:hover {
-  background: #333;
-}
-
-body.dark .drag-drop-hint {
-  color: #777;
-}
-
-body.dark .containerItem {
-  border-color: #444;
-}
-
-body.dark .containerItem.drag-over {
-  box-shadow: 0 0 0 2px #5a9ae6;
-}
-
-body.dark .btn.weak {
-  background: #3a3a3a;
-  color: #ddd;
-}
-
-body.dark .btn.weak:hover {
-  background: #4a4a4a;
-}
-
-body.dark .resultTitle {
-  color: #999;
-}
-
-body.dark #outputImage {
-  border-color: #444;
-}
-
-body.dark .howto-content p,
-body.dark .guide-list {
-  color: #aaa;
-}
-
-body.dark footer {
-  color: #666;
-}
-
-/* 레이아웃 */
 .wrapper {
   width: 100%;
   max-width: 960px;
@@ -166,15 +320,20 @@ body.dark footer {
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  transition: background 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
 }
 
 hr {
   border: none;
   border-top: 1px solid #e0e0e0;
   margin: 1.5rem 0;
+  transition: border-color 0.35s ease;
 }
 
-/* 토스트 메시지 */
+/* ══════════════════════════════════════════
+   토스트 메시지
+   ══════════════════════════════════════════ */
+
 .toolbar {
   position: fixed;
   top: 0;
@@ -200,6 +359,7 @@ hr {
   transition: opacity 0.4s;
   pointer-events: auto;
   z-index: 10000;
+  white-space: pre-line;
 }
 
 .message.hidden {
@@ -219,7 +379,10 @@ hr {
   border: 1px solid #c00;
 }
 
-/* 로딩 오버레이 */
+/* ══════════════════════════════════════════
+   로딩 오버레이
+   ══════════════════════════════════════════ */
+
 #loading {
   position: fixed;
   top: 0;
@@ -232,6 +395,7 @@ hr {
   align-items: center;
   justify-content: center;
   z-index: 9998;
+  transition: background 0.35s ease;
 }
 
 #loading.hidden {
@@ -243,6 +407,7 @@ hr {
   font-size: 1.2rem;
   font-weight: 700;
   color: #4a90d9;
+  transition: color 0.35s ease;
 }
 
 .spinner {
@@ -258,6 +423,7 @@ hr {
   background: #4a90d9;
   border-radius: 50%;
   animation: spinner-fade 1.2s linear infinite;
+  transition: background 0.35s ease;
 }
 
 .dot1  { top: 0; left: 20px; animation-delay: -1.1s; }
@@ -278,13 +444,16 @@ hr {
   40% { opacity: 1; }
 }
 
-/* 드래그 앤 드롭 영역 */
+/* ══════════════════════════════════════════
+   드래그 앤 드롭 영역
+   ══════════════════════════════════════════ */
+
 #dragDropArea {
   border: 2px dashed #ccc;
   border-radius: 8px;
   padding: 2rem 1rem;
   text-align: center;
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color 0.2s, background 0.35s ease;
   cursor: pointer;
 }
 
@@ -298,15 +467,18 @@ hr {
   font-weight: 600;
   color: #666;
   margin-bottom: 0.8rem;
+  transition: color 0.35s ease;
 }
 
 .drag-drop-buttons {
   margin-bottom: 0.5rem;
   color: #888;
+  transition: color 0.35s ease;
 }
 
 #fileInput {
   font-size: 0.9rem;
+  transition: color 0.35s ease;
 }
 
 #btnUploadFromClipboard {
@@ -317,7 +489,7 @@ hr {
   cursor: pointer;
   font-size: 0.85rem;
   color: #555;
-  transition: background 0.2s;
+  transition: background 0.2s, color 0.35s ease, border-color 0.35s ease;
 }
 
 #btnUploadFromClipboard:hover {
@@ -328,9 +500,13 @@ hr {
   font-size: 0.8rem;
   color: #aaa;
   margin-top: 0.5rem;
+  transition: color 0.35s ease;
 }
 
-/* 미리보기 영역 */
+/* ══════════════════════════════════════════
+   미리보기 영역
+   ══════════════════════════════════════════ */
+
 #previewArea {
   margin-top: 1rem;
 }
@@ -347,7 +523,7 @@ hr {
   border-radius: 4px;
   overflow: hidden;
   cursor: grab;
-  transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s, border-color 0.35s ease;
 }
 
 .containerItem:active {
@@ -408,7 +584,10 @@ hr {
   transform: translate(-50%, -50%) rotate(-45deg);
 }
 
-/* 옵션 */
+/* ══════════════════════════════════════════
+   옵션
+   ══════════════════════════════════════════ */
+
 #formOption {
   margin-top: 1rem;
 }
@@ -419,13 +598,18 @@ hr {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  transition: color 0.35s ease;
 }
 
-/* 버튼 */
+/* ══════════════════════════════════════════
+   버튼
+   ══════════════════════════════════════════ */
+
 .buttonArea {
   margin-top: 1rem;
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .btn {
@@ -435,13 +619,17 @@ hr {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: background 0.2s, opacity 0.2s;
+  transition: background 0.2s, opacity 0.2s, transform 0.1s, color 0.35s ease, border-color 0.35s ease;
   background: #4a90d9;
   color: #fff;
 }
 
 .btn:hover {
   background: #357abd;
+}
+
+.btn:active {
+  transform: scale(0.97);
 }
 
 .btn.weak {
@@ -458,7 +646,10 @@ hr {
   pointer-events: none;
 }
 
-/* 결과 섹션 */
+/* ══════════════════════════════════════════
+   결과 섹션
+   ══════════════════════════════════════════ */
+
 #resultSection {
   text-align: center;
 }
@@ -467,6 +658,7 @@ hr {
   color: #888;
   font-size: 0.9rem;
   margin-bottom: 0.5rem;
+  transition: color 0.35s ease;
 }
 
 #saveBtnArea {
@@ -483,6 +675,7 @@ hr {
   cursor: pointer;
   border: 1px solid #ddd;
   border-radius: 4px;
+  transition: border-color 0.35s ease;
 }
 
 #outputImage.hidden {
@@ -498,7 +691,10 @@ hr {
   display: none;
 }
 
-/* 사용 방법 */
+/* ══════════════════════════════════════════
+   사용 방법
+   ══════════════════════════════════════════ */
+
 #howto h3 {
   font-size: 1rem;
   margin-bottom: 0.8rem;
@@ -509,6 +705,7 @@ hr {
   color: #555;
   margin-bottom: 0.5rem;
   line-height: 1.6;
+  transition: color 0.35s ease;
 }
 
 .guide-list {
@@ -516,21 +713,29 @@ hr {
   font-size: 0.85rem;
   color: #555;
   line-height: 1.7;
+  transition: color 0.35s ease;
 }
 
 .guide-list li {
   margin-bottom: 0.2rem;
 }
 
-/* 푸터 */
+/* ══════════════════════════════════════════
+   푸터
+   ══════════════════════════════════════════ */
+
 footer {
   text-align: center;
   padding: 1rem;
   font-size: 0.75rem;
   color: #999;
+  transition: color 0.35s ease;
 }
 
-/* 반응형 */
+/* ══════════════════════════════════════════
+   반응형
+   ══════════════════════════════════════════ */
+
 @media (max-width: 600px) {
   .wrapper {
     padding: 0.5rem 0.25rem;
@@ -552,5 +757,44 @@ footer {
 
   #dragDropArea {
     padding: 1.5rem 0.5rem;
+  }
+
+  header h1 {
+    font-size: 1rem;
+  }
+
+  .dark-toggle {
+    width: 50px;
+    height: 26px;
+    border-radius: 13px;
+  }
+
+  .dark-toggle-thumb {
+    width: 18px;
+    height: 18px;
+    top: 3px;
+    left: 3px;
+  }
+
+  .dark .dark-toggle-thumb {
+    left: 26px;
+  }
+
+  .dark-toggle-icon {
+    font-size: 12px;
+  }
+
+  .dark-toggle-icon.sun {
+    left: 6px;
+  }
+
+  .dark-toggle-icon.moon {
+    right: 6px;
+  }
+
+  .lang-btn {
+    height: 28px;
+    padding: 0 10px;
+    font-size: 0.72rem;
   }
 }
