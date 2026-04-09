@@ -8,7 +8,7 @@ const Matcher = {
 
   // 겹침 매칭
   MIN_OVERLAP_RATIO: 0.05,
-  MAX_OVERLAP_RATIO: 0.70,
+  MAX_OVERLAP_RATIO: 0.92,
   THRES_PIXEL_DIFF: 10,
   THRES_BAD_PIXEL_RATIO: 0.08,
   BAD_PIXEL_THRESHOLD: 20,
@@ -155,26 +155,45 @@ const Matcher = {
   findOverlap(grayI, grayJ) {
     const hI = grayI.rows, hJ = grayJ.rows;
     const w = Math.min(grayI.cols, grayJ.cols);
-    const minOverlap = Math.max(10, Math.floor(Math.min(hI, hJ) * this.MIN_OVERLAP_RATIO));
-    const maxOverlap = Math.floor(Math.min(hI, hJ) * this.MAX_OVERLAP_RATIO);
+    const minH = Math.min(hI, hJ);
+    const minOverlap = Math.max(10, Math.floor(minH * this.MIN_OVERLAP_RATIO));
+    const maxOverlap = Math.floor(minH * this.MAX_OVERLAP_RATIO);
     if (maxOverlap <= minOverlap) return null;
 
-    let bestOverlap = -1, bestDiff = 999;
-
+    // 1단계: 거친 탐색 — diff가 낮은 후보를 여러 개 수집
+    const candidates = [];
     for (let overlap = minOverlap; overlap <= maxOverlap; overlap += this.COARSE_STEP) {
       const diff = this.calcMeanDiffSampled(grayI, grayJ, hI - overlap, 0, overlap, w, 20);
-      if (diff < bestDiff) { bestDiff = diff; bestOverlap = overlap; }
+      candidates.push({ overlap, diff });
     }
 
-    if (bestDiff > this.THRES_PIXEL_DIFF * 2) return null;
+    // diff 기준 상위 후보들을 선별 (bestDiff * 1.5 이내)
+    candidates.sort((a, b) => a.diff - b.diff);
+    if (candidates[0].diff > this.THRES_PIXEL_DIFF * 2) return null;
 
-    const fineStart = Math.max(minOverlap, bestOverlap - this.COARSE_STEP * 2);
-    const fineEnd = Math.min(maxOverlap, bestOverlap + this.COARSE_STEP * 2);
+    const diffCutoff = Math.max(candidates[0].diff * 1.5, candidates[0].diff + 2);
+    const topCandidates = candidates.filter(c => c.diff <= diffCutoff);
 
-    for (let overlap = fineStart; overlap <= fineEnd; overlap++) {
-      const metrics = this.calcDiffMetrics(grayI, grayJ, hI - overlap, 0, overlap, w);
-      if (metrics.meanDiff < bestDiff) { bestDiff = metrics.meanDiff; bestOverlap = overlap; }
+    // 2단계: 각 후보 주변을 정밀 탐색
+    let bestOverlap = -1, bestDiff = 999, bestBadRatio = 1;
+
+    for (const cand of topCandidates) {
+      const fineStart = Math.max(minOverlap, cand.overlap - this.COARSE_STEP * 2);
+      const fineEnd = Math.min(maxOverlap, cand.overlap + this.COARSE_STEP * 2);
+
+      for (let overlap = fineStart; overlap <= fineEnd; overlap++) {
+        const metrics = this.calcDiffMetrics(grayI, grayJ, hI - overlap, 0, overlap, w);
+        // diff가 같으면 겹침이 작은(=스크롤을 더 많이 내린) 쪽을 선호
+        if (metrics.meanDiff < bestDiff - 0.3 ||
+            (Math.abs(metrics.meanDiff - bestDiff) <= 0.3 && overlap < bestOverlap)) {
+          bestDiff = metrics.meanDiff;
+          bestOverlap = overlap;
+          bestBadRatio = metrics.badRatio;
+        }
+      }
     }
+
+    if (bestOverlap === -1) return null;
 
     const final = this.calcDiffMetrics(grayI, grayJ, hI - bestOverlap, 0, bestOverlap, w);
     if (final.meanDiff > this.THRES_PIXEL_DIFF) return null;
@@ -191,33 +210,49 @@ const Matcher = {
   findOverlapDebug(grayI, grayJ, idxI, idxJ) {
     const hI = grayI.rows, hJ = grayJ.rows;
     const w = Math.min(grayI.cols, grayJ.cols);
-    const minOverlap = Math.max(10, Math.floor(Math.min(hI, hJ) * this.MIN_OVERLAP_RATIO));
-    const maxOverlap = Math.floor(Math.min(hI, hJ) * this.MAX_OVERLAP_RATIO);
+    const minH = Math.min(hI, hJ);
+    const minOverlap = Math.max(10, Math.floor(minH * this.MIN_OVERLAP_RATIO));
+    const maxOverlap = Math.floor(minH * this.MAX_OVERLAP_RATIO);
     if (maxOverlap <= minOverlap) return null;
 
-    let bestOverlap = -1, bestDiff = 999;
-
+    // 거친 탐색 — 후보 수집
+    const candidates = [];
     for (let overlap = minOverlap; overlap <= maxOverlap; overlap += this.COARSE_STEP) {
       const diff = this.calcMeanDiffSampled(grayI, grayJ, hI - overlap, 0, overlap, w, 20);
-      if (diff < bestDiff) { bestDiff = diff; bestOverlap = overlap; }
+      candidates.push({ overlap, diff });
     }
 
-    console.log(`  ${idxI}->${idxJ}: 거친탐색 bestDiff=${bestDiff.toFixed(2)}, bestOverlap=${bestOverlap}`);
+    candidates.sort((a, b) => a.diff - b.diff);
+    console.log(`  ${idxI}->${idxJ}: 거친탐색 bestDiff=${candidates[0].diff.toFixed(2)}, bestOverlap=${candidates[0].overlap}`);
 
-    if (bestDiff > this.THRES_PIXEL_DIFF * 2) return null;
+    if (candidates[0].diff > this.THRES_PIXEL_DIFF * 2) return null;
 
-    const fineStart = Math.max(minOverlap, bestOverlap - this.COARSE_STEP * 2);
-    const fineEnd = Math.min(maxOverlap, bestOverlap + this.COARSE_STEP * 2);
+    const diffCutoff = Math.max(candidates[0].diff * 1.5, candidates[0].diff + 2);
+    const topCandidates = candidates.filter(c => c.diff <= diffCutoff);
 
-    for (let overlap = fineStart; overlap <= fineEnd; overlap++) {
-      const metrics = this.calcDiffMetrics(grayI, grayJ, hI - overlap, 0, overlap, w);
-      if (metrics.meanDiff < bestDiff) { bestDiff = metrics.meanDiff; bestOverlap = overlap; }
+    // 정밀 탐색
+    let bestOverlap = -1, bestDiff = 999;
+
+    for (const cand of topCandidates) {
+      const fineStart = Math.max(minOverlap, cand.overlap - this.COARSE_STEP * 2);
+      const fineEnd = Math.min(maxOverlap, cand.overlap + this.COARSE_STEP * 2);
+
+      for (let overlap = fineStart; overlap <= fineEnd; overlap++) {
+        const metrics = this.calcDiffMetrics(grayI, grayJ, hI - overlap, 0, overlap, w);
+        if (metrics.meanDiff < bestDiff - 0.3 ||
+            (Math.abs(metrics.meanDiff - bestDiff) <= 0.3 && overlap < bestOverlap)) {
+          bestDiff = metrics.meanDiff;
+          bestOverlap = overlap;
+        }
+      }
     }
+
+    if (bestOverlap === -1) return null;
 
     const final = this.calcDiffMetrics(grayI, grayJ, hI - bestOverlap, 0, bestOverlap, w);
 
     if (final.meanDiff <= this.THRES_PIXEL_DIFF && final.badRatio <= this.THRES_BAD_PIXEL_RATIO) {
-      console.log(`  ✓ ${idxI}->${idxJ}: overlap=${bestOverlap}px, diff=${final.meanDiff.toFixed(2)}, badRatio=${(final.badRatio*100).toFixed(1)}%`);
+      console.log(`  ✓ ${idxI}->${idxJ}: overlap=${bestOverlap}px (${(bestOverlap/minH*100).toFixed(0)}%), diff=${final.meanDiff.toFixed(2)}, badRatio=${(final.badRatio*100).toFixed(1)}%`);
       return { overlap: bestOverlap, diff: final.meanDiff, badRatio: final.badRatio, offset: hI - bestOverlap };
     }
 
