@@ -3,8 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4a90d9">
+  <meta name="description" content="스크롤 캡처 이미지를 자동으로 병합하는 웹 서비스">
   <title>스크롤 캡처 자동 병합</title>
   <link rel="stylesheet" href="./css/style.css">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
 </head>
 <body>
   <!-- 로딩 오버레이 -->
@@ -34,7 +39,11 @@
 
   <!-- 헤더 -->
   <header id="pageHeader">
-    <h1><a href="./">스크롤 캡처 자동 병합</a></h1>
+    <h1><a href="./" data-i18n="title">스크롤 캡처 자동 병합</a></h1>
+    <div class="header-controls">
+      <button id="btnLang" class="header-btn" title="English">EN</button>
+      <button id="btnDark" class="header-btn" title="다크모드">&#9790;</button>
+    </div>
   </header>
 
   <!-- 메인 컨텐츠 -->
@@ -44,12 +53,12 @@
       <section id="uploadSection">
         <div id="dragDropArea">
           <div class="drag-drop-inside">
-            <p class="drag-drop-info">여기에 파일을 드래그 앤 드롭</p>
+            <p class="drag-drop-info" data-i18n="dragDrop">여기에 파일을 드래그 앤 드롭</p>
             <p class="drag-drop-buttons">
-              또는 <input id="fileInput" type="file" accept="image/*" multiple>
+              <span data-i18n="orFile">또는</span> <input id="fileInput" type="file" accept="image/*" multiple>
             </p>
-            <p><button type="button" id="btnUploadFromClipboard">클립보드에서 붙여넣기</button></p>
-            <p class="drag-drop-hint">자동으로 순서를 정렬하므로 순서는 신경쓰지 않아도 됩니다</p>
+            <p><button type="button" id="btnUploadFromClipboard" data-i18n="pasteClip">클립보드에서 붙여넣기</button></p>
+            <p class="drag-drop-hint" data-i18n="autoSort">자동으로 순서를 정렬하므로 순서는 신경쓰지 않아도 됩니다</p>
           </div>
         </div>
 
@@ -62,14 +71,14 @@
         <div id="formOption">
           <label class="checkLabel">
             <input type="checkbox" id="showHeader" checked>
-            헤더 표시
+            <span data-i18n="showHeader">헤더 표시</span>
           </label>
         </div>
 
         <!-- 액션 버튼 -->
         <div class="buttonArea">
-          <button id="btnSubmit" type="button" class="btn disable cvNotReady imgNotReady">병합</button>
-          <button id="btnReset" type="button" class="btn weak disable imgNotReady">리셋</button>
+          <button id="btnSubmit" type="button" class="btn disable cvNotReady imgNotReady" data-i18n="stitch">병합</button>
+          <button id="btnReset" type="button" class="btn weak disable imgNotReady" data-i18n="reset">리셋</button>
         </div>
       </section>
 
@@ -78,12 +87,12 @@
       <!-- 결과 섹션 -->
       <section id="resultSection">
         <div id="saveBtnArea" class="buttonArea hidden">
-          <button id="btnSaveJPG" class="btn weak">JPG로 저장</button>
-          <button id="btnSavePNG" class="btn weak">PNG로 저장</button>
-          <button id="btnSaveClipboard" class="btn weak">클립보드에 복사</button>
+          <button id="btnSaveJPG" class="btn weak" data-i18n="saveJPG">JPG로 저장</button>
+          <button id="btnSavePNG" class="btn weak" data-i18n="savePNG">PNG로 저장</button>
+          <button id="btnSaveClipboard" class="btn weak" data-i18n="copyClip">클립보드에 복사</button>
         </div>
-        <p id="outputAreaText" class="resultTitle">여기에 결과가 표시됩니다</p>
-        <p id="toggleSizeText" class="resultTitle hidden">이미지를 클릭하면 크기를 전환합니다</p>
+        <p id="outputAreaText" class="resultTitle" data-i18n="resultHere">여기에 결과가 표시됩니다</p>
+        <p id="toggleSizeText" class="resultTitle hidden" data-i18n="clickToggle">이미지를 클릭하면 크기를 전환합니다</p>
         <img id="outputImage" class="hidden" src="" alt="병합 결과">
       </section>
 
@@ -91,42 +100,42 @@
 
       <!-- 사용 방법 -->
       <section id="howto">
-        <h3>사용 방법</h3>
-        <div class="howto-content">
-          <p><strong>1. 스크린샷 촬영</strong><br>
-            화면을 스크롤하며 스크린샷을 여러 장 촬영합니다.</p>
-          <p><strong>2. 업로드</strong><br>
-            촬영한 스크린샷을 드래그 앤 드롭, 파일 선택, 또는 Ctrl+V로 업로드합니다.<br>
-            순서는 자동으로 정렬되므로 신경 쓰지 않아도 됩니다.</p>
-          <p><strong>3. 병합</strong><br>
-            "병합" 버튼을 클릭합니다. 이미지 수에 따라 즉시~수십 초 소요됩니다.</p>
-          <p><strong>4. 저장</strong><br>
-            결과를 확인하고 JPG/PNG 저장 또는 클립보드 복사를 합니다.</p>
+        <h3 data-i18n="howToUse">사용 방법</h3>
+        <div class="howto-content" id="howtoContent">
+          <p><strong data-i18n="step1Title">1. 스크린샷 촬영</strong><br>
+            <span data-i18n="step1Desc">화면을 스크롤하며 스크린샷을 여러 장 촬영합니다.</span></p>
+          <p><strong data-i18n="step2Title">2. 업로드</strong><br>
+            <span data-i18n="step2Desc">촬영한 스크린샷을 드래그 앤 드롭, 파일 선택, 또는 Ctrl+V로 업로드합니다.</span><br>
+            <span data-i18n="step2Desc2">순서는 자동으로 정렬되므로 신경 쓰지 않아도 됩니다.</span></p>
+          <p><strong data-i18n="step3Title">3. 병합</strong><br>
+            <span data-i18n="step3Desc">"병합" 버튼을 클릭합니다. 이미지 수에 따라 즉시~수십 초 소요됩니다.</span></p>
+          <p><strong data-i18n="step4Title">4. 저장</strong><br>
+            <span data-i18n="step4Desc">결과를 확인하고 JPG/PNG 저장 또는 클립보드 복사를 합니다.</span></p>
         </div>
 
-        <h3>촬영 가이드</h3>
-        <div class="howto-content">
-          <p><strong>필수 조건</strong></p>
-          <ul class="guide-list">
-            <li>인접 이미지 간 <strong>최소 2~3줄 이상 겹치도록</strong> 촬영해 주세요.</li>
-            <li>같은 화면을 스크롤하며 촬영한 이미지여야 합니다.</li>
-            <li>모든 이미지의 <strong>해상도(가로x세로)가 동일</strong>해야 합니다.</li>
-            <li>최소 <strong>2장 이상</strong>, 최대 8장까지 권장합니다.</li>
+        <h3 data-i18n="guideTitle">촬영 가이드</h3>
+        <div class="howto-content" id="guideContent">
+          <p><strong data-i18n="guideReq">필수 조건</strong></p>
+          <ul class="guide-list" id="guideReqList">
+            <li data-i18n="guideReq1">인접 이미지 간 <strong>최소 2~3줄 이상 겹치도록</strong> 촬영해 주세요.</li>
+            <li data-i18n="guideReq2">같은 화면을 스크롤하며 촬영한 이미지여야 합니다.</li>
+            <li data-i18n="guideReq3">모든 이미지의 <strong>해상도(가로x세로)가 동일</strong>해야 합니다.</li>
+            <li data-i18n="guideReq4">최소 <strong>2장 이상</strong>, 최대 8장까지 권장합니다.</li>
           </ul>
 
-          <p><strong>잘 되는 경우</strong></p>
-          <ul class="guide-list">
-            <li>스크롤바가 보이는 화면 (게임 상세, 설정 등) &mdash; 자동 순서 정렬 가능</li>
-            <li>고정 헤더/하단바가 있는 화면 (메신저, 게임 UI 등)</li>
-            <li>전체 화면 캡처 (Alt+PrintScreen, 폰 기본 스크린샷)</li>
+          <p><strong data-i18n="guideGood">잘 되는 경우</strong></p>
+          <ul class="guide-list" id="guideGoodList">
+            <li data-i18n="guideGood1">스크롤바가 보이는 화면 (게임 상세, 설정 등) &mdash; 자동 순서 정렬 가능</li>
+            <li data-i18n="guideGood2">고정 헤더/하단바가 있는 화면 (메신저, 게임 UI 등)</li>
+            <li data-i18n="guideGood3">전체 화면 캡처 (Alt+PrintScreen, 폰 기본 스크린샷)</li>
           </ul>
 
-          <p><strong>잘 안 되는 경우</strong></p>
-          <ul class="guide-list">
-            <li>수동으로 크롭하거나 편집한 이미지</li>
-            <li>겹치는 영역이 전혀 없거나 1줄 미만인 경우</li>
-            <li>서로 다른 페이지/화면의 스크린샷을 혼합한 경우</li>
-            <li>스크롤 사이에 화면 내용이 변경된 경우 (실시간 피드 등)</li>
+          <p><strong data-i18n="guideBad">잘 안 되는 경우</strong></p>
+          <ul class="guide-list" id="guideBadList">
+            <li data-i18n="guideBad1">수동으로 크롭하거나 편집한 이미지</li>
+            <li data-i18n="guideBad2">겹치는 영역이 전혀 없거나 1줄 미만인 경우</li>
+            <li data-i18n="guideBad3">서로 다른 페이지/화면의 스크린샷을 혼합한 경우</li>
+            <li data-i18n="guideBad4">스크롤 사이에 화면 내용이 변경된 경우 (실시간 피드 등)</li>
           </ul>
         </div>
       </section>
@@ -135,10 +144,11 @@
 
   <!-- 푸터 -->
   <footer>
-    <p class="footer-text">image-stitching | 클라이언트 사이드 처리 (서버 전송 없음)</p>
+    <p class="footer-text" data-i18n="footer">image-stitching | 클라이언트 사이드 처리 (서버 전송 없음)</p>
   </footer>
 
   <!-- 스크립트 -->
+  <script src="./js/i18n.js"></script>
   <script src="./js/preprocessor.js"></script>
   <script src="./js/matcher.js"></script>
   <script src="./js/renderer.js"></script>

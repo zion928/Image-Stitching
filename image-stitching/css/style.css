@@ -9,6 +9,13 @@ body {
   background: #f0f0f0;
   color: #333;
   min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* 다크모드 */
+body.dark {
+  background: #1a1a1a;
+  color: #e0e0e0;
 }
 
 a {
@@ -21,11 +28,129 @@ header {
   padding: 12px 16px;
   background: #4a90d9;
   color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 header h1 {
   font-size: 1.2rem;
   font-weight: 700;
+}
+
+.header-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.header-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.header-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+body.dark header {
+  background: #2a5a8a;
+}
+
+body.dark .wrapper > article {
+  background: #242424;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+body.dark hr {
+  border-top-color: #3a3a3a;
+}
+
+body.dark #normalMsg {
+  background: rgba(40, 40, 40, 0.95);
+  color: #e0e0e0;
+  border-color: #555;
+}
+
+body.dark #errMsg {
+  background: rgba(60, 20, 20, 0.95);
+  color: #ff6b6b;
+  border-color: #ff6b6b;
+}
+
+body.dark #loading {
+  background: rgba(20, 20, 20, 0.9);
+}
+
+body.dark #dragDropArea {
+  border-color: #555;
+}
+
+body.dark #dragDropArea.dragover {
+  border-color: #5a9ae6;
+  background: rgba(74, 144, 217, 0.1);
+}
+
+body.dark .drag-drop-info {
+  color: #bbb;
+}
+
+body.dark .drag-drop-buttons {
+  color: #999;
+}
+
+body.dark #btnUploadFromClipboard {
+  border-color: #666;
+  color: #bbb;
+}
+
+body.dark #btnUploadFromClipboard:hover {
+  background: #333;
+}
+
+body.dark .drag-drop-hint {
+  color: #777;
+}
+
+body.dark .containerItem {
+  border-color: #444;
+}
+
+body.dark .containerItem.drag-over {
+  box-shadow: 0 0 0 2px #5a9ae6;
+}
+
+body.dark .btn.weak {
+  background: #3a3a3a;
+  color: #ddd;
+}
+
+body.dark .btn.weak:hover {
+  background: #4a4a4a;
+}
+
+body.dark .resultTitle {
+  color: #999;
+}
+
+body.dark #outputImage {
+  border-color: #444;
+}
+
+body.dark .howto-content p,
+body.dark .guide-list {
+  color: #aaa;
+}
+
+body.dark footer {
+  color: #666;
 }
 
 /* 레이아웃 */

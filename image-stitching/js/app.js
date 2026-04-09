@@ -124,7 +124,7 @@ async function addPhotoFromClipboard() {
     }
 
     if (imageItems.length === 0) {
-      raiseErrMsg('클립보드에 이미지가 없습니다.');
+      raiseErrMsg(I18n.t('errClipboardEmpty'));
       return;
     }
 
@@ -146,7 +146,7 @@ async function addPhotoFromClipboard() {
     }
   } catch (e) {
     console.error(e);
-    raiseErrMsg('클립보드에서 이미지를 읽을 수 없습니다. 브라우저가 지원하지 않을 수 있습니다.');
+    raiseErrMsg(I18n.t('errClipboardFail'));
   }
 }
 
@@ -206,13 +206,13 @@ async function generatePhoto() {
     // 사전 검증
     const imgElements = document.querySelectorAll('.previewImage');
     if (imgElements.length === 0) {
-      throw new Error('이미지가 업로드되지 않았습니다.');
+      throw new Error(I18n.t('errNoImage'));
     }
     if (imgElements.length < 2) {
-      throw new Error('2장 이상의 이미지가 필요합니다.');
+      throw new Error(I18n.t('errMinTwo'));
     }
     if (document.getElementById('btnSubmit').classList.contains('cvNotReady')) {
-      throw new Error('라이브러리 로드가 완료되지 않았습니다. 잠시 후 다시 시도해 주세요.');
+      throw new Error(I18n.t('errCvNotReady'));
     }
 
     // 로딩 시작
@@ -281,13 +281,13 @@ async function generatePhoto() {
     console.log(`품질 검증: 유효쌍 ${validPairs}/${totalPairs}, 평균diff ${avgDiff.toFixed(2)}`);
 
     if (validPairs === 0) {
-      throw new Error('이미지 간 겹치는 영역을 찾을 수 없습니다.\n\n아래 조건을 확인해 주세요:\n· 인접 이미지 간 최소 2~3줄 이상 겹치도록 촬영\n· 동일한 화면을 스크롤하며 촬영한 이미지인지 확인\n· 수동으로 크롭/편집한 이미지는 지원하지 않습니다');
+      throw new Error(I18n.t('errNoOverlap'));
     }
     if (validRatio < 0.5) {
-      throw new Error(`이미지 간 겹치는 영역이 부족합니다 (${validPairs}/${totalPairs}쌍만 매칭).\n\n촬영 시 이전 화면과 2~3줄 이상 겹치도록 스크롤해 주세요.`);
+      throw new Error(I18n.t('errLowOverlap', validPairs, totalPairs));
     }
     if (avgDiff > 8) {
-      throw new Error('매칭 품질이 낮아 자연스러운 병합이 어렵습니다.\n\n아래 조건을 확인해 주세요:\n· 같은 화면을 스크롤하며 촬영한 이미지인지 확인\n· 촬영 사이에 화면 내용이 변경되지 않았는지 확인\n· 이미지가 압축되거나 편집되지 않았는지 확인');
+      throw new Error(I18n.t('errLowQuality'));
     }
 
     // 8. Canvas 렌더링
@@ -363,6 +363,18 @@ function onOpenCvReady() {
 // ── 초기화 ──
 
 window.onload = function() {
+  // i18n, 다크모드 초기화
+  DarkMode.init();
+  I18n.init();
+
+  document.getElementById('btnLang').addEventListener('click', () => I18n.toggle());
+  document.getElementById('btnDark').addEventListener('click', () => DarkMode.toggle());
+
+  // Service Worker 등록
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+
   // 파일 드래그 앤 드롭
   const dropArea = document.getElementById('dragDropArea');
   const fileInput = document.getElementById('fileInput');
@@ -427,9 +439,9 @@ window.onload = function() {
     if (!canvas) return;
     try {
       await Renderer.copyToClipboard(canvas);
-      raiseNormalMsg('클립보드에 복사되었습니다.');
+      raiseNormalMsg(I18n.t('msgCopied'));
     } catch (e) {
-      raiseErrMsg('클립보드에 복사할 수 없습니다. 브라우저가 지원하지 않을 수 있습니다.');
+      raiseErrMsg(I18n.t('errCopyFail'));
     }
   });
 
